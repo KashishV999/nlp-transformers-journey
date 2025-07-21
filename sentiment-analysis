@@ -1,0 +1,493 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "gpuType": "T4",
+      "authorship_tag": "ABX9TyMnVwaM1yIigQFxuNqFXlJM",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "GPU"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/KashishV999/nlp-transformers-journey/blob/main/sentiment-analysis\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "MKfcXsJqnggE"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install -U datasets"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from datasets import load_dataset"
+      ],
+      "metadata": {
+        "id": "XVxtEeL7nuYm"
+      },
+      "execution_count": 22,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "raw_datasets = load_dataset(\"SetFit/sst2\")"
+      ],
+      "metadata": {
+        "id": "n_tegjxHnvzK"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "raw_datasets"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "r6DXvBuCn1Vs",
+        "outputId": "31b141a6-c299-4aee-a1b1-eb021a6c2d44"
+      },
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DatasetDict({\n",
+              "    train: Dataset({\n",
+              "        features: ['text', 'label', 'label_text'],\n",
+              "        num_rows: 6920\n",
+              "    })\n",
+              "    validation: Dataset({\n",
+              "        features: ['text', 'label', 'label_text'],\n",
+              "        num_rows: 872\n",
+              "    })\n",
+              "    test: Dataset({\n",
+              "        features: ['text', 'label', 'label_text'],\n",
+              "        num_rows: 1821\n",
+              "    })\n",
+              "})"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 24
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "raw_train_dataset = raw_datasets[\"train\"]\n",
+        "raw_train_dataset[0]"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Jd2BPCMmn35w",
+        "outputId": "9b418608-1947-47e8-f0e5-b484619bc7e3"
+      },
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'text': 'a stirring , funny and finally transporting re-imagining of beauty and the beast and 1930s horror films',\n",
+              " 'label': 1,\n",
+              " 'label_text': 'positive'}"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import AutoTokenizer\n",
+        "\n",
+        "checkpoint = \"bert-base-uncased\"\n",
+        "tokenizer = AutoTokenizer.from_pretrained(checkpoint)"
+      ],
+      "metadata": {
+        "id": "ybSY6_NEn5ey"
+      },
+      "execution_count": 26,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def tokenize_function(example):\n",
+        "    return tokenizer(example[\"text\"],truncation=True)"
+      ],
+      "metadata": {
+        "id": "gdbSBr7Tn7kX"
+      },
+      "execution_count": 27,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)"
+      ],
+      "metadata": {
+        "id": "6TVMSeS-n8-c"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "tokenized_datasets"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "x6bPMMVWn-ru",
+        "outputId": "318d2d00-8c61-41a1-c794-52477dbac57d"
+      },
+      "execution_count": 29,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DatasetDict({\n",
+              "    train: Dataset({\n",
+              "        features: ['text', 'label', 'label_text', 'input_ids', 'token_type_ids', 'attention_mask'],\n",
+              "        num_rows: 6920\n",
+              "    })\n",
+              "    validation: Dataset({\n",
+              "        features: ['text', 'label', 'label_text', 'input_ids', 'token_type_ids', 'attention_mask'],\n",
+              "        num_rows: 872\n",
+              "    })\n",
+              "    test: Dataset({\n",
+              "        features: ['text', 'label', 'label_text', 'input_ids', 'token_type_ids', 'attention_mask'],\n",
+              "        num_rows: 1821\n",
+              "    })\n",
+              "})"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 29
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import DataCollatorWithPadding\n",
+        "\n",
+        "data_collator = DataCollatorWithPadding(tokenizer=tokenizer)"
+      ],
+      "metadata": {
+        "id": "2gl-a9OOoASY"
+      },
+      "execution_count": 30,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install evaluate"
+      ],
+      "metadata": {
+        "id": "gw3kt1jVoD9n"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "import evaluate\n",
+        "\n",
+        "metric = evaluate.load(\"accuracy\")\n",
+        "\n",
+        "\n",
+        "def compute_metrics(eval_preds):\n",
+        "    logits, labels = eval_preds\n",
+        "    predictions = np.argmax(logits, axis=-1)\n",
+        "    return metric.compute(predictions=predictions, references=labels)"
+      ],
+      "metadata": {
+        "id": "VMSgfdgLoFZl"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import TrainingArguments"
+      ],
+      "metadata": {
+        "id": "Vww0_S7HoH2E"
+      },
+      "execution_count": 34,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "training_args = TrainingArguments(\n",
+        "    output_dir=\"test-trainer-sentiment\",\n",
+        "     eval_strategy=\"epoch\",\n",
+        "    report_to=[],\n",
+        "\n",
+        ")"
+      ],
+      "metadata": {
+        "id": "oWJ521c2oIX5"
+      },
+      "execution_count": 35,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import AutoModelForSequenceClassification\n",
+        "\n",
+        "model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)"
+      ],
+      "metadata": {
+        "id": "pSWd_96soLY-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import Trainer\n",
+        "\n",
+        "trainer = Trainer(\n",
+        "    model,\n",
+        "    training_args,\n",
+        "    train_dataset=tokenized_datasets[\"train\"],\n",
+        "    eval_dataset=tokenized_datasets[\"validation\"],\n",
+        "    data_collator=data_collator,\n",
+        "    processing_class=tokenizer,\n",
+        "    compute_metrics=compute_metrics,\n",
+        ")"
+      ],
+      "metadata": {
+        "id": "WEm3bxnyoNEU"
+      },
+      "execution_count": 37,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "train_output = trainer.train()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 168
+        },
+        "collapsed": true,
+        "id": "SkB86HCpoQHN",
+        "outputId": "621052f6-6548-4ac9-f1c2-d205dca544bc"
+      },
+      "execution_count": 38,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": [
+              "\n",
+              "    <div>\n",
+              "      \n",
+              "      <progress value='2595' max='2595' style='width:300px; height:20px; vertical-align: middle;'></progress>\n",
+              "      [2595/2595 06:42, Epoch 3/3]\n",
+              "    </div>\n",
+              "    <table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              " <tr style=\"text-align: left;\">\n",
+              "      <th>Epoch</th>\n",
+              "      <th>Training Loss</th>\n",
+              "      <th>Validation Loss</th>\n",
+              "      <th>Accuracy</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <td>1</td>\n",
+              "      <td>0.426800</td>\n",
+              "      <td>0.362141</td>\n",
+              "      <td>0.894495</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <td>2</td>\n",
+              "      <td>0.192600</td>\n",
+              "      <td>0.409625</td>\n",
+              "      <td>0.901376</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <td>3</td>\n",
+              "      <td>0.072600</td>\n",
+              "      <td>0.468688</td>\n",
+              "      <td>0.916284</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table><p>"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "train_output"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XvKBvyLarS2g",
+        "outputId": "0662f715-1657-4013-c682-7ea9da155154"
+      },
+      "execution_count": 39,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "TrainOutput(global_step=2595, training_loss=0.22319944929295651, metrics={'train_runtime': 402.9277, 'train_samples_per_second': 51.523, 'train_steps_per_second': 6.44, 'total_flos': 458828680555680.0, 'train_loss': 0.22319944929295651, 'epoch': 3.0})"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 39
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "tokenized_datasets[\"test\"]\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "C0_nD3_Rok-C",
+        "outputId": "04f35d9a-5f07-4d39-820f-6466dc3e9250"
+      },
+      "execution_count": 52,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Dataset({\n",
+              "    features: ['text', 'label', 'label_text', 'input_ids', 'token_type_ids', 'attention_mask'],\n",
+              "    num_rows: 1821\n",
+              "})"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 52
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "output = trainer.predict(tokenized_datasets[\"test\"])\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 17
+        },
+        "id": "jSioErdQrJ9Q",
+        "outputId": "7826801e-4f1e-4614-f9c8-314337666bf7"
+      },
+      "execution_count": 53,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": []
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "output.metrics"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "fWhJJ4IqrkeH",
+        "outputId": "5463c0d6-2155-4582-f85c-b23a9717461e"
+      },
+      "execution_count": 54,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'test_loss': 0.4576760530471802,\n",
+              " 'test_accuracy': 0.9132344865458539,\n",
+              " 'test_runtime': 5.8218,\n",
+              " 'test_samples_per_second': 312.789,\n",
+              " 'test_steps_per_second': 39.163}"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 54
+        }
+      ]
+    }
+  ]
+}
