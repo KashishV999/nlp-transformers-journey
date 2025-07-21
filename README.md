@@ -77,14 +77,14 @@ This model is intended for:
 
 The model was fine-tuned on the mteb/emotion dataset which includes 3 splits:
 
-Train: 15,956 samples
-Validation: 1,988 samples
-Test: 1,986 samples
-Each sample contains:
+- Train: 15,956 samples
+- Validation: 1,988 samples
+- Test: 1,986 samples
 
-text: The input sentence
-label: An integer (0–5)
-label_text: Emotion name
+Each sample contains:
+- text: The input sentence
+- label: An integer (0–5)
+- label_text: Emotion name
 
 ## Training procedure
 
