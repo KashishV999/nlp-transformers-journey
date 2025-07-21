@@ -45,17 +45,12 @@ from transformers import pipeline
 
 classify = pipeline("text-classification", model="Kash123aa/emotion-classify")
 
-classify("I wanted to got to karan aujla's concert but i was unable to get tickets")
-# [{'label': 'fear', 'score': 0.4427618682384491}]
 
 classify("I went finally after 4 years to aujla's concert")
 # [{'label': 'joy', 'score': 0.9822591543197632}]
 
 classify("I smiled at the photo, but deep down, I felt hollow.")
 # [{'label': 'sadness', 'score': 0.9996618032455444}]
-
-classify("I booked tht ticktes for concert but at th end my brother canceelled the plan")
-# [{'label': 'anger', 'score': 0.48287907242774963}]
 
 ```
 ---
