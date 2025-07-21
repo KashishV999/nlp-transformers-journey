@@ -22,7 +22,7 @@ It is trained to classify English text into one of six emotion categories:
 ## 🚀 Features
 
 - Based on [bert-base-uncased](https://huggingface.co/bert-base-uncased)  
-- Fine-tuned on [SST-2 dataset](https://huggingface.co/datasets/mteb/emotion)  
+- Fine-tuned on [emotion dataset](https://huggingface.co/datasets/mteb/emotion)  
 - Fast, accurate 6 emotion classification  
 - Easy to use with Hugging Face's `transformers` pipeline  
 
