@@ -2,6 +2,11 @@
 
 # Sentiment-BERT 
 
+[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Sentiment--BERT-blue?logo=huggingface)](https://huggingface.co/Kash123aa/sentiment-bert)
+
+Try the model on Hugging Face 👉 [Sentiment-BERT on Hugging Face](https://huggingface.co/Kash123aa/sentiment-bert)
+
+
 A **fine-tuned BERT** model for sentiment analysis on the SST-2 dataset : classifies sentences as **Positive** or **Negative**.  
 Built with 🤗 Hugging Face Transformers and trained using transfer learning.
 
